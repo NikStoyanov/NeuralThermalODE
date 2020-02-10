@@ -1,0 +1,6 @@
+*.jl.cov
+*.jl.*.cov
+*.jl.mem
+tmp.gif
+gks.*
+Manifest.toml
