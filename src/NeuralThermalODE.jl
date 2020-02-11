@@ -10,16 +10,17 @@ using Reexport
 @reexport using DifferentialEquations
 
 struct ThermalODE{T}
+    dx::T       # Mesh size.
     c::T        # Specific heat.
     ρ::T        # Density.
     k::T        # Thermal conductivity.
     sinkT::T    # Cryogenic liquid temperature.
     ambT::T     # Initial condition.
-    htcAmb:: T  # Atmospheric HTC.
+    htcAmb::T   # Atmospheric HTC.
 end
 
-function BuildThermalODE(c, ρ, k, sinkT, ambT, htcAmb)
-    ThermalODE(c, ρ, k, sinkT, ambT, htcAmb)
+function BuildThermalODE(dx, c, ρ, k, sinkT, ambT, htcAmb)
+    ThermalODE(dx, c, ρ, k, sinkT, ambT, htcAmb)
 end
 
 # Calculate h as the interpolation for the current time point.
@@ -49,13 +50,14 @@ end
 function heat_transfer(pr, du, u, h, t)
     ΔT = (pr.sinkT + u[1]) / 2 - u[1]
     α = pr.k / (pr.ρ * pr.c)
+    dx = pr.dx
 
     # Node exposed to cryogenic liquid.
     du[1] = 2 * (ΔT * htc(h, t) /
                  (pr.c * pr.ρ) - α * (u[1] - u[2]) / dx) / dx
 
     # Inner nodes.
-    for i in 2:size(u) - 1
+    for i in 2:length(u) - 1
         du[i] = α * (u[i - 1] - 2u[i] + u[i + 1]) / dx^2
     end
 
@@ -74,12 +76,12 @@ function read_data(filename)
     nrows, ncols = size(table)
     for row in 2:nrows
         if table[row, 1] == table[row - 1, 1]
-            println("Row ", row, " is a duplicate. Deleting...")
-            table[row, 1] = 0
+            @warn("Row ", row, " is a duplicate. Deleting...")
+            table[row, 1] = -1
         end
     end
 
-    table = table[table[1].!=0,:]
+    table = table[table[1].!=-1,:]
 
     return table
 end
@@ -97,14 +99,17 @@ function write_checkpoint(filename, table)
     CSV.write(filename, table)
 end
 
+# Pass the temperature time series of the element on the unexposed side through
 # Flux reverse-mode AD through the differential equation solver.
-function predict_rd()
-    diffeq_adjoint(p, prob, Tsit5(), saveat = 1.0)[end, :]
+# TODO: use Zygote AD by concrete_solve.
+function predict_rd(p, prob)
+    #Array(concrete_solve(prob, Tsit5(), prob.u0, p, saveat = 1.0))
+    diffeq_adjoint(p, prob, Tsit5())
 end
 
 # Least squares error.
-function loss_rd()
-    sum(abs2, test_data[:, 2] .- predict_rd())
+function loss_rd(test_data, p, prob)
+    sum(abs2, test_data .- predict_rd(p, prob)[end, :])
 end
 
 # Solve to get an idea of the initial guess.
@@ -122,6 +127,7 @@ export BuildThermalODE,
        read_data,
        predict_rd,
        loss_rd,
-       initial_solve
+       initial_solve,
+       heat_transfer
 
 end
