@@ -1,12 +1,12 @@
 using NeuralThermalODE
 
 # Test data file.
-test_data = read_data("test_data/test_data.csv")
+test_data = read_data("Fig_67.csv_Result.csv")
 
 # Domain.
 const N = 10
-const t = 0.00635
-const dx = t / N
+const tmat = 0.00635
+const dx = tmat / N
 
 # Boundary conditions.
 const sinkT = test_data[end, 2]
@@ -17,15 +17,13 @@ const tspan = (Float64(test_data[1, 1]), Float64(test_data[end, 1]))
 const pr = BuildThermalODE(450.0, 7850.0, 42.0, sinkT, ambT, 4.0)
 
 # Solve ODE.
-p = read_checkpoint("test_data/initial_guess.csv")
+p = read_checkpoint("initial_guess.csv")
 
 du = zeros(N)
 
 # Pass additional arguments through closure.
-prob = ODEProblem((u20, p, t) -> heat_transfer(pr, du, u20, p, tspan), u20, tspan, p, saveat = 1.0)
+prob = ODEProblem((du, u20, p, t) -> heat_transfer(pr, du, u20, p, t), u20, tspan, p, saveat = 1.0)
 
-@test 1 == 1
-#=
 data = Iterators.repeated((), 10000)
 opt = ADAM(20.0)
 
@@ -124,4 +122,3 @@ plot(tot_loss, color = :black, label = "Loss",
     fmt = :svg,
     grid = false)
 savefig("loss.svg")
-=#
