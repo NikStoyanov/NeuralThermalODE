@@ -14,7 +14,7 @@ const ambT = test_data[1, 2]
 u20 = ambT * ones(N)
 const tspan = (Float64(test_data[1, 1]), Float64(test_data[end, 1]))
 
-const pr = BuildThermalODE(450.0, 7850.0, 42.0, sinkT, ambT, 4.0)
+const pr = BuildThermalODE(dx, 450.0, 7850.0, 42.0, sinkT, ambT, 4.0)
 
 # Solve ODE.
 p = read_checkpoint("initial_guess.csv")
