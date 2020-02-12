@@ -65,4 +65,4 @@ cb()
 Flux.train!(() -> loss_rd(Vector(test_data[2]), p, prob), [p], data, opt, cb = cb)
 
 res = Flux.data(p)[1:end-1]
-@test isapprox(res[1], 706.0, 1.0)
+@test isapprox(res[1], 706.0, atol = 1.0)
