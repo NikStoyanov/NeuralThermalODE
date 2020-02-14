@@ -112,22 +112,12 @@ function loss_rd(test_data, p, prob, algo)
     sum(abs2, test_data .- predict_rd(p, prob, algo)[end, :])
 end
 
-# Solve to get an idea of the initial guess.
-function initial_solve(ini_h, u20, tspan, test_data)
-    p = ini_h * ones(test_data[end, 1])
-    prob = ODEProblem(heat_transfer, u20, tspan, p, saveat = 1.0)
-    sol = solve(prob)
-    plot(sol.t[:], sol[end, :], label = "Solution")
-    plot!(test_data[:, 1], test_data[:, 2], label = "Test data")
-end
-
 export BuildThermalODE,
        read_checkpoint,
        write_checkpoint,
        read_data,
        predict_rd,
        loss_rd,
-       initial_solve,
        heat_transfer
 
 end
