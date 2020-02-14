@@ -50,21 +50,20 @@ end
 function heat_transfer(pr, du, u, h, t)
     ΔT = (pr.sinkT + u[1]) / 2 - u[1]
     α = pr.k / (pr.ρ * pr.c)
-    dx = pr.dx
 
     # Node exposed to cryogenic liquid.
     du[1] = 2 * (ΔT * htc(h, t) /
-                 (pr.c * pr.ρ) - α * (u[1] - u[2]) / dx) / dx
+                 (pr.c * pr.ρ) - α * (u[1] - u[2]) / pr.dx) / pr.dx
 
     # Inner nodes.
-    for i in 2:length(u) - 1
-        du[i] = α * (u[i - 1] - 2u[i] + u[i + 1]) / dx^2
+    @inbounds for i in 2:length(u) - 1
+        du[i] = α * (u[i - 1] - 2u[i] + u[i + 1]) / pr.dx^2
     end
 
     # Node exposed to ambient atmosphere. TC is located here.
     du[end] = 2 * (α * (u[end-1] - u[end]) /
-                   dx - (u[end] - pr.ambT) * pr.htcAmb /
-                   (pr.ρ * pr.c)) / dx
+                   pr.dx - (u[end] - pr.ambT) * pr.htcAmb /
+                   (pr.ρ * pr.c)) / pr.dx
 end
 
 # Read test data.
