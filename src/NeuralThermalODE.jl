@@ -102,14 +102,14 @@ end
 # Pass the temperature time series of the element on the unexposed side through
 # Flux reverse-mode AD through the differential equation solver.
 # TODO: use Zygote AD by concrete_solve.
-function predict_rd(p, prob)
+function predict_rd(p, prob, algo)
     #Array(concrete_solve(prob, Tsit5(), prob.u0, p, saveat = 1.0))
-    diffeq_adjoint(p, prob, Tsit5())
+    diffeq_adjoint(p, prob, algo)
 end
 
 # Least squares error.
-function loss_rd(test_data, p, prob)
-    sum(abs2, test_data .- predict_rd(p, prob)[end, :])
+function loss_rd(test_data, p, prob, algo)
+    sum(abs2, test_data .- predict_rd(p, prob, algo)[end, :])
 end
 
 # Solve to get an idea of the initial guess.

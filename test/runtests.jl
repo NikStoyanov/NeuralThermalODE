@@ -43,11 +43,13 @@ tot_loss = []
 training_cnt = -1
 early_exit = false
 
+algo = Tsit5()
+
 cb = function ()
     global training_cnt += 1
 
     # Save loss function.
-    loss = loss_rd(Vector(test_data[2]), p, prob)
+    loss = loss_rd(Vector(test_data[2]), p, prob, algo)
     append!(tot_loss, loss)
 
     if loss <= target_loss
@@ -58,11 +60,11 @@ cb = function ()
         end
     end
 
-    sol = solve(remake(prob, p = Flux.data(p)), Tsit5(), saveat = 1.0)
+    sol = solve(remake(prob, p = Flux.data(p)), algo, saveat = 1.0)
 end
 
 cb()
-Flux.train!(() -> loss_rd(Vector(test_data[2]), p, prob), [p], data, opt, cb = cb)
+Flux.train!(() -> loss_rd(Vector(test_data[2]), p, prob, algo), [p], data, opt, cb = cb)
 
 res = Flux.data(p)[1:end-1]
 @test isapprox(res[1], 706.0, atol = 1.0)
