@@ -1,7 +1,7 @@
 name = "NeuralThermalODE"
 uuid = "69f15d0b-bc49-4a9d-958f-dd3adf12db3f"
 authors = ["Nikola Stoyanov <nstoyanov.92@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
